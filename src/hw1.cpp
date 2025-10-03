@@ -1,5 +1,6 @@
 #include "hw1.h"
 #include "hw1_scenes.h"
+#include <ranges>
 
 #define sz(x) (int)(x).size()
 using namespace hw1;
@@ -180,7 +181,6 @@ Image3 hw_1_2(const std::vector<std::string> &params)
 
 Image3 hw_1_3(const std::vector<std::string> &params)
 {
-    // Homework 1.3: render multiple shapes
     if (params.size() == 0)
     {
         return Image3(0, 0);
@@ -190,14 +190,88 @@ Image3 hw_1_3(const std::vector<std::string> &params)
     std::cout << scene << std::endl;
 
     Image3 img(scene.resolution.x, scene.resolution.y);
-
+    
     for (int y = 0; y < img.height; y++)
     {
         for (int x = 0; x < img.width; x++)
         {
-            img(x, y) = Vector3{1, 1, 1};
+            img(x, y) = scene.background;
         }
     }
+    
+    for (auto shape : scene.shapes | std::views::reverse) {
+        if(auto *circle = std::get_if<Circle>(&shape)) {
+            for (int y = 0; y < img.height; y++) {
+                for (int x = 0; x < img.width; x++) {
+                    Real pixel_x = x + 0.5;
+                    Real pixel_y = (img.height - 1 - y) + 0.5;
+                    Real dx = pixel_x - circle->center.x;
+                    Real dy = pixel_y - circle->center.y;
+                    Real dist = sqrt(dx * dx + dy * dy);
+                    
+                    if (circle->fill_color.has_value() && dist <= circle->radius) {
+                        img(x, y) = *circle->fill_color;
+                    }
+                    
+                    if (circle->stroke_color.has_value()) {
+                        Real outer_radius = circle->radius + circle->stroke_width / 2;
+                        Real inner_radius = circle->radius - circle->stroke_width / 2;
+                        if (dist >= inner_radius && dist <= outer_radius) {
+                            img(x, y) = *circle->stroke_color;
+                        }
+                    }
+                }
+            }
+        } else if(auto *polyline = std::get_if<Polyline>(&shape)) {
+            auto inside = [&](Vector2 point) -> bool {
+                int winding = 0;
+                for (int i = 0; i < sz(polyline->points); i++) {
+                    auto j = (i + 1) % sz(polyline->points);
+                    if ((polyline->points[i].y > point.y) != (polyline->points[j].y > point.y) &&
+                        (point.x < (polyline->points[j].x - polyline->points[i].x) * (point.y - polyline->points[i].y) / 
+                         (polyline->points[j].y - polyline->points[i].y) + polyline->points[i].x)) {
+                        winding += polyline->points[j].y > polyline->points[i].y ? 1 : -1;
+                    }
+                }
+                return winding != 0;
+            };
+
+            auto dist_pt_to_line = [](Vector2 v, Vector2 a, Vector2 b) {
+                Vector2 ab = b - a;
+                Vector2 av = v - a;
+                Real ab_len2 = dot(ab, ab);
+                if (!ab_len2) return length(av);
+                Real t = dot(av, ab) / ab_len2;
+                t = std::clamp(t, 0.0, 1.0);
+                Vector2 projection = a + t * ab;
+                return length(v - projection);
+            };
+
+            for (int y = 0; y < img.height; y++) {
+                for (int x = 0; x < img.width; x++) {
+                    Real pixel_x = x + 0.5;
+                    Real pixel_y = (img.height - 1 - y) + 0.5;
+                    Vector2 pixel_pos = Vector2{pixel_x, pixel_y};
+
+                    if (polyline->is_closed && polyline->fill_color.has_value() && inside(pixel_pos)) {
+                        img(x, y) = *polyline->fill_color;
+                    }
+
+                    if (polyline->stroke_color.has_value()) {
+                        for (int i = 0; i < (polyline->is_closed ? sz(polyline->points) : sz(polyline->points) - 1); i++) {
+                            int j = (i + 1) % sz(polyline->points);
+                            auto dist = dist_pt_to_line(pixel_pos, polyline->points[i], polyline->points[j]);
+                            if (dist <= polyline->stroke_width / 2) {
+                                img(x, y) = *polyline->stroke_color;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
     return img;
 }
 
