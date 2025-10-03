@@ -1,9 +1,11 @@
 #include "hw1.h"
 #include "hw1_scenes.h"
 
+#define sz(x) (int)(x).size()
 using namespace hw1;
 
-Image3 hw_1_1(const std::vector<std::string> &params) {
+Image3 hw_1_1(const std::vector<std::string> &params)
+{
     // Homework 1.1: render a circle at the specified
     // position, with the specified radius and color.
 
@@ -12,35 +14,54 @@ Image3 hw_1_1(const std::vector<std::string> &params) {
     Vector2 center = Vector2{img.width / 2 + Real(0.5), img.height / 2 + Real(0.5)};
     Real radius = 100.0;
     Vector3 color = Vector3{1.0, 0.5, 0.5};
-    for (int i = 0; i < (int)params.size(); i++) {
-        if (params[i] == "-center") {
+    for (int i = 0; i < (int)params.size(); i++)
+    {
+        if (params[i] == "-center")
+        {
             Real x = std::stof(params[++i]);
             Real y = std::stof(params[++i]);
             center = Vector2{x, y};
-        } else if (params[i] == "-radius") {
+        }
+        else if (params[i] == "-radius")
+        {
             radius = std::stof(params[++i]);
-        } else if (params[i] == "-color") {
+        }
+        else if (params[i] == "-color")
+        {
             Real r = std::stof(params[++i]);
             Real g = std::stof(params[++i]);
             Real b = std::stof(params[++i]);
             color = Vector3{r, g, b};
         }
     }
-    // silence warnings, feel free to remove it
-    UNUSED(radius);
-    UNUSED(color);
 
-    for (int y = 0; y < img.height; y++) {
-        for (int x = 0; x < img.width; x++) {
-            img(x, y) = Vector3{1, 1, 1};
+    for (int y = 0; y < img.height; y++)
+    {
+        for (int x = 0; x < img.width; x++)
+        {
+            Real pixel_x = x + 0.5;
+            Real pixel_y = (img.height - 1 - y) + 0.5;
+            Real dx = pixel_x - center.x;
+            Real dy = pixel_y - center.y;
+
+            if (dx * dx + dy * dy <= radius * radius)
+            {
+                img(x, y) = color;
+            }
+            else
+            {
+                img(x, y) = Vector3{0.5, 0.5, 0.5};
+            }
         }
     }
     return img;
 }
 
-Image3 hw_1_2(const std::vector<std::string> &params) {
+Image3 hw_1_2(const std::vector<std::string> &params)
+{
     // Homework 1.2: render polylines
-    if (params.size() == 0) {
+    if (params.size() == 0)
+    {
         return Image3(0, 0);
     }
 
@@ -52,50 +73,116 @@ Image3 hw_1_2(const std::vector<std::string> &params) {
     std::optional<Vector3> fill_color;
     std::optional<Vector3> stroke_color;
     Real stroke_width = 1;
-    for (int i = 0; i < (int)params.size(); i++) {
-        if (params[i] == "-points") {
-            while (params.size() > i+1 &&
-                    params[i+1].length() > 0 &&
-                    params[i+1][0] != '-') {
+    for (int i = 0; i < (int)params.size(); i++)
+    {
+        if (params[i] == "-points")
+        {
+            while (params.size() > i + 1 &&
+                   params[i + 1].length() > 0 &&
+                   params[i + 1][0] != '-')
+            {
                 Real x = std::stof(params[++i]);
                 Real y = std::stof(params[++i]);
                 polyline.push_back(Vector2{x, y});
             }
-        } else if (params[i] == "--closed") {
+        }
+        else if (params[i] == "--closed")
+        {
             is_closed = true;
-        } else if (params[i] == "-fill_color") {
+        }
+        else if (params[i] == "-fill_color")
+        {
             Real r = std::stof(params[++i]);
             Real g = std::stof(params[++i]);
             Real b = std::stof(params[++i]);
             fill_color = Vector3{r, g, b};
-        } else if (params[i] == "-stroke_color") {
+        }
+        else if (params[i] == "-stroke_color")
+        {
             Real r = std::stof(params[++i]);
             Real g = std::stof(params[++i]);
             Real b = std::stof(params[++i]);
             stroke_color = Vector3{r, g, b};
-        } else if (params[i] == "-stroke_width") {
+        }
+        else if (params[i] == "-stroke_width")
+        {
             stroke_width = std::stof(params[++i]);
         }
     }
-    // silence warnings, feel free to remove it
-    UNUSED(stroke_width);
 
-    if (fill_color && !is_closed) {
+    if (fill_color && !is_closed)
+    {
         std::cout << "Error: can't have a non-closed shape with fill color." << std::endl;
         return Image3(0, 0);
     }
 
-    for (int y = 0; y < img.height; y++) {
-        for (int x = 0; x < img.width; x++) {
-            img(x, y) = Vector3{1, 1, 1};
+    auto inside = [&](Vector2 point) -> bool
+    {
+        int winding = 0;
+        for (int i = 0; i < sz(polyline); i++)
+        {
+            auto j = (i + 1) % sz(polyline);
+            if ((polyline[i].y > point.y) != (polyline[j].y > point.y) &&
+                (point.x < (polyline[j].x - polyline[i].x) * (point.y - polyline[i].y) / (polyline[j].y - polyline[i].y) + polyline[i].x))
+            {
+                winding += polyline[j].y > polyline[i].y ? 1 : -1;
+            }
+        }
+        return winding != 0;
+    };
+
+    auto dist_pt_to_line = [](Vector2 v, Vector2 a, Vector2 b)
+    {
+        Vector2 ab = b - a;
+        Vector2 av = v - a;
+        Real ab_len2 = dot(ab, ab);
+        if (!ab_len2)
+            return length(av);
+        Real t = dot(av, ab) / ab_len2;
+        t = std::clamp(t, 0.0, 1.0);
+        Vector2 projection = a + t * ab;
+        return length(v - projection);
+    };
+
+    for (int y = 0; y < img.height; y++)
+    {
+        for (int x = 0; x < img.width; x++)
+        {
+            Real pixel_x = x + 0.5;
+            Real pixel_y = (img.height - 1 - y) + 0.5;
+
+            if (is_closed && fill_color.has_value() && inside(Vector2{pixel_x, pixel_y}))
+            {
+                img(x, y) = *fill_color;
+            }
+            else
+            {
+                img(x, y) = Vector3{0.5, 0.5, 0.5};
+            }
+
+            if (stroke_color.has_value())
+            {
+                for (int i = 0; i < (is_closed ? sz(polyline) : sz(polyline) - 1); i++)
+                {
+                    int j = (i + 1) % sz(polyline);
+                    auto dist = dist_pt_to_line(Vector2{pixel_x, pixel_y}, polyline[i], polyline[j]);
+                    if (dist <= stroke_width / 2)
+                    {
+                        img(x, y) = *stroke_color;
+                        break;
+                    }
+                }
+            }
         }
     }
     return img;
 }
 
-Image3 hw_1_3(const std::vector<std::string> &params) {
+Image3 hw_1_3(const std::vector<std::string> &params)
+{
     // Homework 1.3: render multiple shapes
-    if (params.size() == 0) {
+    if (params.size() == 0)
+    {
         return Image3(0, 0);
     }
 
@@ -104,17 +191,21 @@ Image3 hw_1_3(const std::vector<std::string> &params) {
 
     Image3 img(scene.resolution.x, scene.resolution.y);
 
-    for (int y = 0; y < img.height; y++) {
-        for (int x = 0; x < img.width; x++) {
+    for (int y = 0; y < img.height; y++)
+    {
+        for (int x = 0; x < img.width; x++)
+        {
             img(x, y) = Vector3{1, 1, 1};
         }
     }
     return img;
 }
 
-Image3 hw_1_4(const std::vector<std::string> &params) {
+Image3 hw_1_4(const std::vector<std::string> &params)
+{
     // Homework 1.4: render transformed shapes
-    if (params.size() == 0) {
+    if (params.size() == 0)
+    {
         return Image3(0, 0);
     }
 
@@ -123,17 +214,21 @@ Image3 hw_1_4(const std::vector<std::string> &params) {
 
     Image3 img(scene.resolution.x, scene.resolution.y);
 
-    for (int y = 0; y < img.height; y++) {
-        for (int x = 0; x < img.width; x++) {
+    for (int y = 0; y < img.height; y++)
+    {
+        for (int x = 0; x < img.width; x++)
+        {
             img(x, y) = Vector3{1, 1, 1};
         }
     }
     return img;
 }
 
-Image3 hw_1_5(const std::vector<std::string> &params) {
+Image3 hw_1_5(const std::vector<std::string> &params)
+{
     // Homework 1.5: antialiasing
-    if (params.size() == 0) {
+    if (params.size() == 0)
+    {
         return Image3(0, 0);
     }
 
@@ -142,17 +237,21 @@ Image3 hw_1_5(const std::vector<std::string> &params) {
 
     Image3 img(scene.resolution.x, scene.resolution.y);
 
-    for (int y = 0; y < img.height; y++) {
-        for (int x = 0; x < img.width; x++) {
+    for (int y = 0; y < img.height; y++)
+    {
+        for (int x = 0; x < img.width; x++)
+        {
             img(x, y) = Vector3{1, 1, 1};
         }
     }
     return img;
 }
 
-Image3 hw_1_6(const std::vector<std::string> &params) {
+Image3 hw_1_6(const std::vector<std::string> &params)
+{
     // Homework 1.6: alpha blending
-    if (params.size() == 0) {
+    if (params.size() == 0)
+    {
         return Image3(0, 0);
     }
 
@@ -161,8 +260,10 @@ Image3 hw_1_6(const std::vector<std::string> &params) {
 
     Image3 img(scene.resolution.x, scene.resolution.y);
 
-    for (int y = 0; y < img.height; y++) {
-        for (int x = 0; x < img.width; x++) {
+    for (int y = 0; y < img.height; y++)
+    {
+        for (int x = 0; x < img.width; x++)
+        {
             img(x, y) = Vector3{1, 1, 1};
         }
     }

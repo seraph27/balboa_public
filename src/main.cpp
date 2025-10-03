@@ -5,54 +5,105 @@
 #include <vector>
 #include <string>
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
     std::vector<std::string> parameters;
     std::string hw_num;
-    for (int i = 1; i < argc; ++i) {
-        if (std::string(argv[i]) == "-hw") {
+    std::string output_name;
+    for (int i = 1; i < argc; ++i)
+    {
+        if (std::string(argv[i]) == "-hw")
+        {
             hw_num = std::string(argv[++i]);
-        } else {
+        }
+        else if (std::string(argv[i]) == "-output")
+        {
+            output_name = std::string(argv[++i]);
+        }
+        else
+        {
             parameters.push_back(std::string(argv[i]));
         }
     }
 
-    if (hw_num == "1_1") {
+    if (hw_num == "1_1")
+    {
         Image3 img = hw_1_1(parameters);
-        imwrite("hw_1_1.png", img);
-    } else if (hw_num == "1_2") {
+        if (!output_name.empty())
+        {
+            imwrite(output_name, img);
+        }
+        else
+        {
+            imwrite("hw_1_1.png", img);
+        }
+    }
+    else if (hw_num == "1_2")
+    {
         Image3 img = hw_1_2(parameters);
-        imwrite("hw_1_2.png", img);
-    } else if (hw_num == "1_3") {
+        if (!output_name.empty())
+        {
+            imwrite(output_name, img);
+        }
+        else
+        {
+            imwrite("hw_1_2.png", img);
+        }
+    }
+    else if (hw_num == "1_3")
+    {
         Image3 img = hw_1_3(parameters);
         imwrite("hw_1_3.png", img);
-    } else if (hw_num == "1_4") {
+    }
+    else if (hw_num == "1_4")
+    {
         Image3 img = hw_1_4(parameters);
         imwrite("hw_1_4.png", img);
-    } else if (hw_num == "1_5") {
+    }
+    else if (hw_num == "1_5")
+    {
         Image3 img = hw_1_5(parameters);
         imwrite("hw_1_5.png", img);
-    } else if (hw_num == "1_6") {
+    }
+    else if (hw_num == "1_6")
+    {
         Image3 img = hw_1_6(parameters);
         imwrite("hw_1_6.png", img);
-    } else if (hw_num == "2_1") {
+    }
+    else if (hw_num == "2_1")
+    {
         Image3 img = hw_2_1(parameters);
         imwrite("hw_2_1.png", img);
-    } else if (hw_num == "2_2") {
+    }
+    else if (hw_num == "2_2")
+    {
         Image3 img = hw_2_2(parameters);
         imwrite("hw_2_2.png", img);
-    } else if (hw_num == "2_3") {
+    }
+    else if (hw_num == "2_3")
+    {
         Image3 img = hw_2_3(parameters);
         imwrite("hw_2_3.png", img);
-    } else if (hw_num == "2_4") {
+    }
+    else if (hw_num == "2_4")
+    {
         Image3 img = hw_2_4(parameters);
         imwrite("hw_2_4.png", img);
-    } else if (hw_num == "3_1") {
+    }
+    else if (hw_num == "3_1")
+    {
         hw_3_1(parameters);
-    } else if (hw_num == "3_2") {
+    }
+    else if (hw_num == "3_2")
+    {
         hw_3_2(parameters);
-    } else if (hw_num == "3_3") {
+    }
+    else if (hw_num == "3_3")
+    {
         hw_3_3(parameters);
-    } else if (hw_num == "3_4") {
+    }
+    else if (hw_num == "3_4")
+    {
         hw_3_4(parameters);
     }
 
