@@ -1,0 +1,10 @@
+^C:\USERS\REXCH\ONEDRIVE\DOCUMENTS\BALBOA_PUBLIC\BUILD\CMAKEFILES\968698008513EA0BB67E2B7E11812DB9\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/rexch/OneDrive/Documents/balboa_public -BC:/Users/rexch/OneDrive/Documents/balboa_public/build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file C:/Users/rexch/OneDrive/Documents/balboa_public/build/balboa.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

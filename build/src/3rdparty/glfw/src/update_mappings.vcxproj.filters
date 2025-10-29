@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\rexch\OneDrive\Documents\balboa_public\build\CMakeFiles\57248d4cac7afe305e14ad7d19fbdaf2\update_mappings.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\rexch\OneDrive\Documents\balboa_public\src\3rdparty\glfw\src\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\rexch\OneDrive\Documents\balboa_public\src\3rdparty\glfw\src\mappings.h.in">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="C:\Users\rexch\OneDrive\Documents\balboa_public\src\3rdparty\glfw\CMake\GenerateMappings.cmake" />
+    <None Include="C:\Users\rexch\OneDrive\Documents\balboa_public\build\src\3rdparty\glfw\src\CMakeFiles\update_mappings" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{71DB942F-6004-3CCB-BEDB-842991F238F8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{4D1EF133-1E00-3902-827F-8886468D91D5}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

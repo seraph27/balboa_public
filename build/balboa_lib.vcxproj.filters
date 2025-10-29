@@ -1,0 +1,96 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\rexch\OneDrive\Documents\balboa_public\src\3rdparty\glad.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\rexch\OneDrive\Documents\balboa_public\src\3rdparty\tinyply.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\rexch\OneDrive\Documents\balboa_public\src\hw1.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\rexch\OneDrive\Documents\balboa_public\src\hw1_scenes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\rexch\OneDrive\Documents\balboa_public\src\hw2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\rexch\OneDrive\Documents\balboa_public\src\hw2_scenes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\rexch\OneDrive\Documents\balboa_public\src\hw3.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\rexch\OneDrive\Documents\balboa_public\src\hw3_scenes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\rexch\OneDrive\Documents\balboa_public\src\image.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\rexch\OneDrive\Documents\balboa_public\src\3rdparty\glad.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\rexch\OneDrive\Documents\balboa_public\src\3rdparty\json.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\rexch\OneDrive\Documents\balboa_public\src\3rdparty\khrplatform.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\rexch\OneDrive\Documents\balboa_public\src\3rdparty\stb_image.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\rexch\OneDrive\Documents\balboa_public\src\3rdparty\stb_image_write.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\rexch\OneDrive\Documents\balboa_public\src\3rdparty\tinyply.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\rexch\OneDrive\Documents\balboa_public\src\flexception.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\rexch\OneDrive\Documents\balboa_public\src\hw1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\rexch\OneDrive\Documents\balboa_public\src\hw1_scenes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\rexch\OneDrive\Documents\balboa_public\src\hw2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\rexch\OneDrive\Documents\balboa_public\src\hw2_scenes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\rexch\OneDrive\Documents\balboa_public\src\hw3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\rexch\OneDrive\Documents\balboa_public\src\hw3_scenes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\rexch\OneDrive\Documents\balboa_public\src\image.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\rexch\OneDrive\Documents\balboa_public\src\matrix.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\rexch\OneDrive\Documents\balboa_public\src\timer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\rexch\OneDrive\Documents\balboa_public\src\vector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\rexch\OneDrive\Documents\balboa_public\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{4D1EF133-1E00-3902-827F-8886468D91D5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{8CE3E3D5-A4D5-3B2C-81DC-84F8EA6FF3D9}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

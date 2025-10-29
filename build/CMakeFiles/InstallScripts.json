@@ -1,0 +1,9 @@
+{
+	"InstallScripts" : 
+	[
+		"C:/Users/rexch/OneDrive/Documents/balboa_public/build/cmake_install.cmake",
+		"C:/Users/rexch/OneDrive/Documents/balboa_public/build/src/3rdparty/glfw/cmake_install.cmake",
+		"C:/Users/rexch/OneDrive/Documents/balboa_public/build/src/3rdparty/glfw/src/cmake_install.cmake"
+	],
+	"Parallel" : false
+}
