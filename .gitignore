@@ -37,6 +37,10 @@ build/
 *.pdf
 !handouts/imgs/*.pdf
 
+# Homework outputs
+hw_*.png
+outputs/hw_*.png
+
 # Vscode related
 .vscode
 __pycache__/

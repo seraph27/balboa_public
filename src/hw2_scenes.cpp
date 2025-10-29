@@ -238,48 +238,56 @@ Matrix4x4 parse_transformation(const json &node) {
 
     for (auto it = transform_it->begin(); it != transform_it->end(); it++) {
         if (auto scale_it = it->find("scale"); scale_it != it->end()) {
-            Vector3 scale = Vector3{
-                (*scale_it)[0], (*scale_it)[1], (*scale_it)[2]
-            };
-            // TODO (HW2.4): construct a scale matrix and composite with F
-            UNUSED(scale); // silence warning, feel free to remove it
+            auto [sx, sy, sz] = std::tuple{(*scale_it)[0], (*scale_it)[1], (*scale_it)[2]};
+            auto S = Matrix4x4::identity();
+            S(0, 0) = sx; S(1, 1) = sy; S(2, 2) = sz;
+            F = S * F;
         } else if (auto rotate_it = it->find("rotate"); rotate_it != it->end()) {
-            Real angle = (*rotate_it)[0];
-            Vector3 axis = normalize(Vector3{
-                (*rotate_it)[1], (*rotate_it)[2], (*rotate_it)[3]
-            });
-            // TODO (HW2.4): construct a rotation matrix and composite with F
-            UNUSED(angle); // silence warning, feel free to remove it
-            UNUSED(axis); // silence warning, feel free to remove it
+            Real ang = (*rotate_it)[0];
+            auto a = normalize(Vector3{(*rotate_it)[1], (*rotate_it)[2], (*rotate_it)[3]});
+            auto t = ang * M_PI / 180.0;
+            auto c = cos(t);
+            auto sn = sin(t);
+            auto R = Matrix4x4::identity();
+            R(0, 0) = a.x*a.x + (1-a.x*a.x)*c;
+            R(0, 1) = a.y*a.x*(1-c) - a.z*sn;
+            R(0, 2) = a.z*a.x*(1-c) + a.y*sn;
+            R(1, 0) = a.x*a.y*(1-c) + a.z*sn;
+            R(1, 1) = a.y*a.y + (1-a.y*a.y)*c;
+            R(1, 2) = a.z*a.y*(1-c) - a.x*sn;
+            R(2, 0) = a.x*a.z*(1-c) - a.y*sn;
+            R(2, 1) = a.y*a.z*(1-c) + a.x*sn;
+            R(2, 2) = a.z*a.z + (1-a.z*a.z)*c;
+            F = R * F;
         } else if (auto translate_it = it->find("translate"); translate_it != it->end()) {
-            Vector3 translate = Vector3{
-                (*translate_it)[0], (*translate_it)[1], (*translate_it)[2]
-            };
-            // TODO (HW2.4): construct a translation matrix and composite with F
-            UNUSED(translate); // silence warning, feel free to remove it
+            auto [tx, ty, tz] = std::tuple{(*translate_it)[0], (*translate_it)[1], (*translate_it)[2]};
+            auto T = Matrix4x4::identity();
+            T(0, 3) = tx; T(1, 3) = ty; T(2, 3) = tz;
+            F = T * F;
         } else if (auto lookat_it = it->find("lookat"); lookat_it != it->end()) {
-            Vector3 position{0, 0, 0};
-            Vector3 target{0, 0, -1};
-            Vector3 up{0, 1, 0};
+            auto pos = Vector3{0, 0, 0};
+            auto tgt = Vector3{0, 0, -1};
+            auto up = Vector3{0, 1, 0};
             auto position_it = lookat_it->find("position");
             auto target_it = lookat_it->find("target");
             auto up_it = lookat_it->find("up");
             if (position_it != lookat_it->end()) {
-                position = Vector3{
-                    (*position_it)[0], (*position_it)[1], (*position_it)[2]
-                };
+                pos = Vector3{(*position_it)[0], (*position_it)[1], (*position_it)[2]};
             }
             if (target_it != lookat_it->end()) {
-                target = Vector3{
-                    (*target_it)[0], (*target_it)[1], (*target_it)[2]
-                };
+                tgt = Vector3{(*target_it)[0], (*target_it)[1], (*target_it)[2]};
             }
             if (up_it != lookat_it->end()) {
-                up = normalize(Vector3{
-                    (*up_it)[0], (*up_it)[1], (*up_it)[2]
-                });
+                up = normalize(Vector3{(*up_it)[0], (*up_it)[1], (*up_it)[2]});
             }
-            // TODO (HW2.4): construct a lookat matrix and composite with F
+            auto d = normalize(tgt - pos);
+            auto r = normalize(cross(d, up));
+            auto u = cross(r, d);
+            auto L = Matrix4x4::identity();
+            L(0, 0) = r.x; L(0, 1) = u.x; L(0, 2) = -d.x; L(0, 3) = pos.x;
+            L(1, 0) = r.y; L(1, 1) = u.y; L(1, 2) = -d.y; L(1, 3) = pos.y;
+            L(2, 0) = r.z; L(2, 1) = u.z; L(2, 2) = -d.z; L(2, 3) = pos.z;
+            F = L * F;
         }
     }
     return F;
