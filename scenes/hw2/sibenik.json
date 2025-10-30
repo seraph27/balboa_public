@@ -1,0 +1,27 @@
+{
+  "camera": {
+    "resolution": [640, 480],
+    "transform": [
+      {
+        "lookat": {
+          "position": [2, 1.5, 4],
+          "target": [0, 0, 0],
+          "up": [0, 1, 0]
+        }
+      }
+    ],
+    "s": 0.7,
+    "z_near": 1e-6
+  },
+  "background": [0.1, 0.1, 0.15],
+  "objects": [
+    {
+      "filename": "sibenik.ply",
+      "transform": [
+        { "scale": [0.02, 0.02, 0.02] },
+        { "rotate": [0, 0, 1, 0] },
+        { "translate": [0, 0, -5] }
+      ]
+    }
+  ]
+}

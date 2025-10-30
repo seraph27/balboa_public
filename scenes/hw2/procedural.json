@@ -1,0 +1,27 @@
+{
+  "camera": {
+    "resolution": [640, 480],
+    "transform": [
+      {
+        "lookat": {
+          "position": [2, 1.5, 2.5],
+          "target": [0, 0, 0],
+          "up": [0, 1, 0]
+        }
+      }
+    ],
+    "s": 0.6,
+    "z_near": 1e-6
+  },
+  "background": [0.1, 0.1, 0.15],
+  "objects": [
+    {
+      "filename": "torus_knot.ply",
+      "transform": [
+        { "scale": [1, 1, 1] },
+        { "rotate": [30, 1, 1, 0] },
+        { "translate": [0, 0, -3] }
+      ]
+    }
+  ]
+}
