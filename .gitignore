@@ -33,6 +33,8 @@
 
 # CMake
 build/
+.ninja_deps
+.ninja_log
 
 *.pdf
 !handouts/imgs/*.pdf
