@@ -1,0 +1,27 @@
+{
+  "camera": {
+    "resolution": [640, 480],
+    "transform": [
+      {
+        "lookat": {
+          "position": [0, 1, 3],
+          "target": [0, 0, 0],
+          "up": [0, 1, 0]
+        }
+      }
+    ],
+    "s": 0.6,
+    "z_near": 1e-6
+  },
+  "background": [0.15, 0.15, 0.2],
+  "objects": [
+    {
+      "filename": "chair_decimated.ply",
+      "transform": [
+        { "scale": [1, 1, 1] },
+        { "rotate": [0, 0, 1, 0] },
+        { "translate": [0, -0.5, -2] }
+      ]
+    }
+  ]
+}
