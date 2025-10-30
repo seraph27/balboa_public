@@ -7,6 +7,50 @@ template<class T> bool ckmin(T& a, const T& b) { return b < a ? a = b, 1 : 0; }
 template<class T> bool ckmax(T& a, const T& b) { return b > a ? a = b, 1 : 0; }
 using namespace hw2;
 
+struct ClippedTri {
+    Vector3 v[3];
+};
+
+int clip_triangle(Vector3 p0, Vector3 p1, Vector3 p2, Real z_near, ClippedTri out[2]) {
+    auto behind = [&](const Vector3& p) { return -p.z < z_near; };
+    auto lerp_z = [&](const Vector3& a, const Vector3& b) {
+        auto t = (z_near + a.z) / (a.z - b.z);
+        return Vector3{a.x + t * (b.x - a.x), a.y + t * (b.y - a.y), -z_near};
+    };
+    
+    int cnt = behind(p0) + behind(p1) + behind(p2);
+    if (cnt == 0) {
+        out[0].v[0] = p0; out[0].v[1] = p1; out[0].v[2] = p2;
+        return 1;
+    }
+    if (cnt == 3) return 0;
+    
+    if (cnt == 1) {
+        Vector3 front1, front2, back;
+        if (behind(p0)) { back = p0; front1 = p1; front2 = p2; }
+        else if (behind(p1)) { back = p1; front1 = p0; front2 = p2; }
+        else { back = p2; front1 = p0; front2 = p1; }
+        
+        auto i1 = lerp_z(back, front1);
+        auto i2 = lerp_z(back, front2);
+        
+        out[0].v[0] = i1; out[0].v[1] = front1; out[0].v[2] = front2;
+        out[1].v[0] = i1; out[1].v[1] = front2; out[1].v[2] = i2;
+        return 2;
+    }
+    
+    Vector3 front, back1, back2;
+    if (!behind(p0)) { front = p0; back1 = p1; back2 = p2; }
+    else if (!behind(p1)) { front = p1; back1 = p0; back2 = p2; }
+    else { front = p2; back1 = p0; back2 = p1; }
+    
+    auto i1 = lerp_z(front, back1);
+    auto i2 = lerp_z(front, back2);
+    
+    out[0].v[0] = front; out[0].v[1] = i1; out[0].v[2] = i2;
+    return 1;
+}
+
 template<typename T>
 Image3 supersample(int width, int height, const Vector3& bg_color, T f) {
     Image3 new_img(width * 4, height * 4);
@@ -63,42 +107,43 @@ Image3 hw_2_1(const std::vector<std::string> &params) {
         }
     }
 
-    //reject image if vertex too close to the camera
-    if(-p0.z < z_near || -p1.z < z_near || -p2.z < z_near) {
-        for(int y = 0; y < img.height; y++) for(int x = 0; x < img.width; x++) {
-            img(x, y) = Vector3{0.5, 0.5, 0.5};
-        }
-        return img;
-    }
-
-    Real x0_proj = p0.x / -p0.z, y0_proj = p0.y / -p0.z;
-    Real x1_proj = p1.x / -p1.z, y1_proj = p1.y / -p1.z;
-    Real x2_proj = p2.x / -p2.z, y2_proj = p2.y / -p2.z;
-
-    Real aspect_ratio = (Real)img.width / img.height;
-    Real x0_screen = img.width * (x0_proj + s * aspect_ratio) / (2 * s * aspect_ratio);
-    Real y0_screen = img.height * (s - y0_proj) / (2 * s);
-    Real x1_screen = img.width * (x1_proj + s * aspect_ratio) / (2 * s * aspect_ratio);
-    Real y1_screen = img.height * (s - y1_proj) / (2 * s);
-    Real x2_screen = img.width * (x2_proj + s * aspect_ratio) / (2 * s * aspect_ratio);
-    Real y2_screen = img.height * (s - y2_proj) / (2 * s);
-
+    ClippedTri clipped[2];
+    int num_tris = clip_triangle(p0, p1, p2, z_near, clipped);
+    
     auto bg = Vector3{0.5, 0.5, 0.5};
+    auto aspect_ratio = (Real)img.width / img.height;
+    
+    auto project_to_screen = [&](const Vector3& p) -> Vector2 {
+        Real x_proj = -p.x / p.z;
+        Real y_proj = -p.y / p.z;
+        Real x_screen = img.width * (x_proj + s * aspect_ratio) / (2 * s * aspect_ratio);
+        Real y_screen = img.height * (s - y_proj) / (2 * s);
+        return Vector2{x_screen, y_screen};
+    };
 
-    auto [px0, py0] = Vector2{x0_screen, y0_screen};
-    auto [px1, py1] = Vector2{x1_screen, y1_screen};
-    auto [px2, py2] = Vector2{x2_screen, y2_screen};
-
-    auto inside_triangle = [&](Real sx, Real sy) {
-        auto e0 = (px1 - px0) * (sy - py0) - (py1 - py0) * (sx - px0);
-        auto e1 = (px2 - px1) * (sy - py1) - (py2 - py1) * (sx - px1);
-        auto e2 = (px0 - px2) * (sy - py2) - (py0 - py2) * (sx - px2);
+    auto is_inside_triangle = [](Real sx, Real sy, Vector2 p0, Vector2 p1, Vector2 p2) -> bool {
+        auto e0 = (p1.x - p0.x) * (sy - p0.y) - (p1.y - p0.y) * (sx - p0.x);
+        auto e1 = (p2.x - p1.x) * (sy - p1.y) - (p2.y - p1.y) * (sx - p1.x);
+        auto e2 = (p0.x - p2.x) * (sy - p2.y) - (p0.y - p2.y) * (sx - p2.x);
         return (e0 >= 0 && e1 >= 0 && e2 >= 0) || (e0 <= 0 && e1 <= 0 && e2 <= 0);
     };
 
     return supersample(img.width, img.height, bg,
         [&](Real sx, Real sy) {
-            if (inside_triangle(sx / 4.0, sy / 4.0)) return color;
+            sx /= 4.0;
+            sy /= 4.0;
+            
+            for (int ti = 0; ti < num_tris; ti++) {
+                auto cp0 = clipped[ti].v[0], cp1 = clipped[ti].v[1], cp2 = clipped[ti].v[2];
+                
+                auto [px0, py0] = project_to_screen(cp0);
+                auto [px1, py1] = project_to_screen(cp1);
+                auto [px2, py2] = project_to_screen(cp2);
+                
+                if (is_inside_triangle(sx, sy, {px0, py0}, {px1, py1}, {px2, py2})) {
+                    return color;
+                }
+            }
             return bg;
         }
     );
@@ -161,24 +206,27 @@ Image3 hw_2_2(const std::vector<std::string> &params) {
                 auto face = mesh.faces[i];
                 auto [p0, p1, p2] = std::tuple{mesh.vertices[face[0]], mesh.vertices[face[1]], mesh.vertices[face[2]]};
 
-                if (-p0.z < z_near || -p1.z < z_near || -p2.z < z_near) {
-                    continue;
-                }
-
-                auto [px0, py0] = project_to_screen(p0);
-                auto [px1, py1] = project_to_screen(p1);
-                auto [px2, py2] = project_to_screen(p2);
-
-                if (is_inside_triangle(sx, sy, {px0, py0}, {px1, py1}, {px2, py2})) {
-                    auto bp = calc_barycentric_coords(sx, sy, px0, py0, px1, py1, px2, py2);
-
-                    auto inv_d = bp[0] / p0.z + bp[1] / p1.z + bp[2] / p2.z;
-                    auto b0 = (bp[0] / p0.z) / inv_d;
-                    auto b1 = (bp[1] / p1.z) / inv_d;
-                    auto b2 = (bp[2] / p2.z) / inv_d;
-                    auto z = b0 * p0.z + b1 * p1.z + b2 * p2.z;
-                    if (ckmax(z_min, z)) {
-                        res = mesh.face_colors[i];
+                ClippedTri clipped[2];
+                int num_tris = clip_triangle(p0, p1, p2, z_near, clipped);
+                
+                for (int ti = 0; ti < num_tris; ti++) {
+                    auto cp0 = clipped[ti].v[0], cp1 = clipped[ti].v[1], cp2 = clipped[ti].v[2];
+                    
+                    auto [px0, py0] = project_to_screen(cp0);
+                    auto [px1, py1] = project_to_screen(cp1);
+                    auto [px2, py2] = project_to_screen(cp2);
+                    
+                    if (is_inside_triangle(sx, sy, {px0, py0}, {px1, py1}, {px2, py2})) {
+                        auto bp = calc_barycentric_coords(sx, sy, px0, py0, px1, py1, px2, py2);
+                        
+                        auto inv_d = bp[0] / cp0.z + bp[1] / cp1.z + bp[2] / cp2.z;
+                        auto b0 = (bp[0] / cp0.z) / inv_d;
+                        auto b1 = (bp[1] / cp1.z) / inv_d;
+                        auto b2 = (bp[2] / cp2.z) / inv_d;
+                        auto z = b0 * cp0.z + b1 * cp1.z + b2 * cp2.z;
+                        if (ckmax(z_min, z)) {
+                            res = mesh.face_colors[i];
+                        }
                     }
                 }
             }
@@ -245,29 +293,32 @@ Image3 hw_2_3(const std::vector<std::string> &params) {
                 auto face = mesh.faces[i];
                 auto [p0, p1, p2] = std::tuple{mesh.vertices[face[0]], mesh.vertices[face[1]], mesh.vertices[face[2]]};
 
-                if (-p0.z < z_near || -p1.z < z_near || -p2.z < z_near) {
-                    continue;
-                }
-
-                auto [px0, py0] = project_to_screen(p0);
-                auto [px1, py1] = project_to_screen(p1);
-                auto [px2, py2] = project_to_screen(p2);
-
-                if (is_inside_triangle(sx, sy, {px0, py0}, {px1, py1}, {px2, py2})) {
-                    auto bp = calc_barycentric_coords(sx, sy, px0, py0, px1, py1, px2, py2);
-
-                    auto inv_d = bp[0] / p0.z + bp[1] / p1.z + bp[2] / p2.z;
-                    auto b0 = (bp[0] / p0.z) / inv_d;
-                    auto b1 = (bp[1] / p1.z) / inv_d;
-                    auto b2 = (bp[2] / p2.z) / inv_d;
-
-                    auto z = b0 * p0.z + b1 * p1.z + b2 * p2.z;
-
-                    if (ckmax(z_min, z)) {
-                        auto c0 = mesh.vertex_colors[face[0]];
-                        auto c1 = mesh.vertex_colors[face[1]];
-                        auto c2 = mesh.vertex_colors[face[2]];
-                        res = b0 * c0 + b1 * c1 + b2 * c2;
+                ClippedTri clipped[2];
+                int num_tris = clip_triangle(p0, p1, p2, z_near, clipped);
+                
+                for (int ti = 0; ti < num_tris; ti++) {
+                    auto cp0 = clipped[ti].v[0], cp1 = clipped[ti].v[1], cp2 = clipped[ti].v[2];
+                    
+                    auto [px0, py0] = project_to_screen(cp0);
+                    auto [px1, py1] = project_to_screen(cp1);
+                    auto [px2, py2] = project_to_screen(cp2);
+                    
+                    if (is_inside_triangle(sx, sy, {px0, py0}, {px1, py1}, {px2, py2})) {
+                        auto bp = calc_barycentric_coords(sx, sy, px0, py0, px1, py1, px2, py2);
+                        
+                        auto inv_d = bp[0] / cp0.z + bp[1] / cp1.z + bp[2] / cp2.z;
+                        auto b0 = (bp[0] / cp0.z) / inv_d;
+                        auto b1 = (bp[1] / cp1.z) / inv_d;
+                        auto b2 = (bp[2] / cp2.z) / inv_d;
+                        
+                        auto z = b0 * cp0.z + b1 * cp1.z + b2 * cp2.z;
+                        
+                        if (ckmax(z_min, z)) {
+                            auto c0 = mesh.vertex_colors[face[0]];
+                            auto c1 = mesh.vertex_colors[face[1]];
+                            auto c2 = mesh.vertex_colors[face[2]];
+                            res = b0 * c0 + b1 * c1 + b2 * c2;
+                        }
                     }
                 }
             }
@@ -336,27 +387,32 @@ Image3 hw_2_4(const std::vector<std::string> &params) {
                     auto p1 = Vector3{p1_h.x, p1_h.y, p1_h.z};
                     auto p2 = Vector3{p2_h.x, p2_h.y, p2_h.z};
 
-                    if (-p0.z < z_near || -p1.z < z_near || -p2.z < z_near) continue;
+                    ClippedTri clipped[2];
+                    int num_tris = clip_triangle(p0, p1, p2, z_near, clipped);
+                    
+                    for (int ti = 0; ti < num_tris; ti++) {
+                        auto cp0 = clipped[ti].v[0], cp1 = clipped[ti].v[1], cp2 = clipped[ti].v[2];
 
-                    auto [px0, py0] = project_to_screen(p0);
-                    auto [px1, py1] = project_to_screen(p1);
-                    auto [px2, py2] = project_to_screen(p2);
-
-                    if (is_inside_triangle(sx, sy, {px0, py0}, {px1, py1}, {px2, py2})) {
-                        auto bp = calc_barycentric_coords(sx, sy, px0, py0, px1, py1, px2, py2);
-
-                        auto inv_d = bp[0] / p0.z + bp[1] / p1.z + bp[2] / p2.z;
-                        auto b0 = (bp[0] / p0.z) / inv_d;
-                        auto b1 = (bp[1] / p1.z) / inv_d;
-                        auto b2 = (bp[2] / p2.z) / inv_d;
-
-                        auto z = b0 * p0.z + b1 * p1.z + b2 * p2.z;
-
-                        if (ckmax(z_min, z)) {
-                            auto c0 = mesh.vertex_colors[face[0]];
-                            auto c1 = mesh.vertex_colors[face[1]];
-                            auto c2 = mesh.vertex_colors[face[2]];
-                            res = b0 * c0 + b1 * c1 + b2 * c2;
+                        auto [px0, py0] = project_to_screen(cp0);
+                        auto [px1, py1] = project_to_screen(cp1);
+                        auto [px2, py2] = project_to_screen(cp2);
+                    
+                        if (is_inside_triangle(sx, sy, {px0, py0}, {px1, py1}, {px2, py2})) {
+                            auto bp = calc_barycentric_coords(sx, sy, px0, py0, px1, py1, px2, py2);
+                        
+                            auto inv_d = bp[0] / cp0.z + bp[1] / cp1.z + bp[2] / cp2.z;
+                            auto b0 = (bp[0] / cp0.z) / inv_d;
+                            auto b1 = (bp[1] / cp1.z) / inv_d;
+                            auto b2 = (bp[2] / cp2.z) / inv_d;
+                        
+                            auto z = b0 * cp0.z + b1 * cp1.z + b2 * cp2.z;
+                        
+                            if (ckmax(z_min, z)) {
+                                auto c0 = mesh.vertex_colors[face[0]];
+                                auto c1 = mesh.vertex_colors[face[1]];
+                                auto c2 = mesh.vertex_colors[face[2]];
+                                res = b0 * c0 + b1 * c1 + b2 * c2;
+                            }
                         }
                     }
                 }
