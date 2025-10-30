@@ -43,6 +43,10 @@ build/
 hw_*.png
 outputs/hw_*.png
 
+# Submission packages
+hw*_submission/
+hw*_submission.zip
+
 # Vscode related
 .vscode
 __pycache__/
